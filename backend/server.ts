@@ -53,7 +53,6 @@ app.get("/getList/:listId", async (req, res) => {
       id: req.params.listId,
     },
   });
-  console.log(list);
   res.send(list);
 });
 
@@ -75,7 +74,6 @@ app.post("/createList", async (req, res) => {
     },
   });
 
-  console.log(req.body.selectedUsers);
   const updatedlist = await client.userInList.createMany({
     data: req.body.selectedUsers.map(
       (user: { id: string; name: string; email: string }) => ({
@@ -86,7 +84,6 @@ app.post("/createList", async (req, res) => {
       })
     ),
   });
-  console.log(updatedlist);
 
   res.send(list);
 });
@@ -103,7 +100,6 @@ app.post("/deleteList", async (req, res) => {
       id: req.body.listId,
     },
   });
-  console.log(list);
   res.send(list);
 });
 
@@ -123,6 +119,8 @@ app.post("/addUserToList", async (req, res) => {
   const user = await client.userInList.create({
     data: {
       userId: req.body.userId,
+      userName: req.body.userName,
+      userEmail: req.body.userEmail,
       listId: req.body.listId,
     },
   });

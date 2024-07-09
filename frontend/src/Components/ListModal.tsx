@@ -36,10 +36,10 @@ async function deleteUserFromList(listId: string, userId: string) {
     return json;
 }
 
-async function addUserToList(listId: string, userId: string) {
+async function addUserToList(listId: string, userId: string, userName: string, userEmail: string) {
     const response = await fetch(`${serverPath}/addUserToList`, {
         method: "POST",
-        body: JSON.stringify({ listId, userId }),
+        body: JSON.stringify({ listId, userId, userName, userEmail }),
         headers: {
             "Content-Type": "application/json",
         },
@@ -66,6 +66,7 @@ function ListModal() {
     const [editMode, setEditMode] = useState(false);
     const [poller, setPoller] = useState(0);
     const [users, setUsers] = useState<User[]>([]);
+    const [currentNonSelectedUsers, setCurrentNonSelectedUsers] = useState<User[]>([]);
 
     const refreshLists = () => {
         getLists().then((data) => {
@@ -84,6 +85,7 @@ function ListModal() {
     useEffect(() => {
         refreshLists();
         refreshUsers();
+
     }, [poller]);
 
     const settings = editMode ? "btn btn-sm bg-gray-200 hover:bg-red-400" : "";
@@ -128,7 +130,6 @@ function ListModal() {
                                 {editMode ? (
                                     <div>
                                         {users.map((user: User) => {
-                                            //console.log(user.name);
                                             const listIDs = list.users.map((user: { userId: string, userName: string, userEmail: string }) => user.userId);
                                             if (!listIDs.includes(user.id)) {
                                                 console.log(listIDs);
@@ -136,7 +137,7 @@ function ListModal() {
                                                 return (
                                                     <div key={user.id} className={`flex flex-row w-80 justify-between ${addSettings}`} onClick={() => {
                                                         if (editMode) {
-                                                            addUserToList(list.id, user.id);
+                                                            addUserToList(list.id, user.id, user.name, user.email);
                                                             setPoller(poller + 1);
                                                         }
                                                     }}>
