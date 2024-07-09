@@ -27,7 +27,7 @@ async function createList(listName: string, selectedUsers: string[]) {
 
 
 
-export default function CreateListModal() {
+export default function CreateListModal({ poller, setPoller }: { poller: number, setPoller: (poller: number) => void }) {
 
     const [listName, setListName] = useState("");
     const [unselectedUsers, setUnselectedUsers] = useState([]);
@@ -95,13 +95,14 @@ export default function CreateListModal() {
                 <div className="modal-action">
                     <button className="btn absolute right-2 bottom-2" onClick={() => {
                         const createListModal = document.getElementById("createlistModal") as HTMLDialogElement | null;
-                        if (createListModal && listName !== "" && selectedUsers.length > 0) {
+                        if (createListModal && listName !== "") {
                             createList(listName, selectedUsers);
                             setListName("");
                             getUsers().then((data) => {
                                 setUnselectedUsers(data);
                             });
                             setSelectedUsers([]);
+                            setPoller(poller + 1);
                             createListModal.close();
 
                         }
