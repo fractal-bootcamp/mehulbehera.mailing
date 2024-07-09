@@ -127,6 +127,48 @@ app.post("/addUserToList", async (req, res) => {
   res.send(user);
 });
 
+app.post("/createUser", async (req, res) => {
+  const user = await client.user.create({
+    data: {
+      name: req.body.userName,
+      email: req.body.userEmail,
+    },
+  });
+
+  await client.userInList.createMany({
+    data: req.body.lists.map((list: { id: string; name: string }) => ({
+      userId: user.id,
+      listId: list.id,
+      userName: user.name,
+      userEmail: user.email,
+    })),
+  });
+
+  res.send(user);
+});
+
+app.post("/deleteUsers", async (req, res) => {
+  const userToDelete = req.body.users;
+
+  for (const user of userToDelete) {
+    await client.userInList.deleteMany({
+      where: {
+        userId: user.id,
+      },
+    });
+  }
+
+  for (const user of userToDelete) {
+    await client.user.delete({
+      where: {
+        id: user.id,
+      },
+    });
+  }
+
+  res.send(userToDelete);
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
