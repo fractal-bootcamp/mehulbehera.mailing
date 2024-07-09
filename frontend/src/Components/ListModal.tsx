@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import CreateListModal from "./CreateListModal";
 import CreateUserModal from "./CreateUserModal";
+import DeleteUserModal from "./DeleteUserModal";
 
 const serverPath = "http://localhost:3000";
 
@@ -88,7 +89,7 @@ function ListModal() {
 
     const settings = editMode ? "btn btn-sm bg-gray-200 hover:bg-red-400" : "";
     const addSettings = editMode ? "btn btn-sm bg-gray-200 hover:bg-green-400" : "";
-    const editButtonSettings = editMode ? "btn btn-sm bg-green-400" : "btn btn-sm bg-blue-400";
+    const editButtonSettings = editMode ? "btn btn-sm bg-green-400 hover:bg-green-500" : "btn btn-sm bg-blue-400 hover:bg-blue-500";
 
     return (
         <>
@@ -118,6 +119,17 @@ function ListModal() {
                         <img src='plus.png' className="w-6 h-6 mt-1" />
                     </div>
 
+                    <div className="btn flex btn-sm flex-row absolute top-1 right-60 mr-11 bg-red-400 hover:bg-red-500" onClick={() => {
+                        const deleteUserModal = document.getElementById("deleteUserModal") as HTMLDialogElement;
+                        if (deleteUserModal) {
+                            deleteUserModal.showModal();
+                        }
+                    }} >
+
+                        <p>Delete User</p>
+                        <img src='trashcan.png' className="w-6 h-6 mt-1" />
+                    </div>
+
                     {lists.map((list: { id: string, name: string, users: { userId: string, userName: string, userEmail: string }[] }) => (
                         <div className="collapse collapse-arrow bg-base-200">
                             <input type="radio" name="my-accordion-2" />
@@ -133,7 +145,7 @@ function ListModal() {
                                     }}>
                                         <p>{user.userName}</p>
                                         <p>{user.userEmail}</p>
-                                        {editMode ? <img src="trashcan.png" className="w-5 mt-1 h-5" /> : null}
+                                        {editMode ? <img src="minus.png" className="w-3 mt-1 h-3 mr-1" /> : null}
                                     </div>
                                 ))}
 
@@ -159,13 +171,13 @@ function ListModal() {
                                     </div>
                                 ) : null}
 
-                                <button className="btn btn-sm bg-red-400 absolute right-2 bottom-2" onClick={() => {
+                                <button className="btn btn-sm bg-red-400 hover:bg-red-500 absolute right-2 bottom-2" onClick={() => {
                                     deleteList(list.id);
                                     setPoller(poller + 1);
                                 }}>Delete</button>
                                 <button className={`btn btn-sm ${editButtonSettings} absolute right-20 bottom-2`} onClick={() => {
                                     setEditMode(!editMode);
-                                }}>{editMode ? "Done" : "Edit Users"}</button>
+                                }}>{editMode ? "Done" : "Edit List"}</button>
 
                             </div>
                         </div>
@@ -180,7 +192,7 @@ function ListModal() {
 
             <CreateListModal poller={poller} setPoller={setPoller} />
             <CreateUserModal poller={poller} setPoller={setPoller} />
-
+            <DeleteUserModal poller={poller} setPoller={setPoller} />
         </>
     )
 }

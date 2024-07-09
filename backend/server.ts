@@ -147,6 +147,28 @@ app.post("/createUser", async (req, res) => {
   res.send(user);
 });
 
+app.post("/deleteUsers", async (req, res) => {
+  const userToDelete = req.body.users;
+
+  for (const user of userToDelete) {
+    await client.userInList.deleteMany({
+      where: {
+        userId: user.id,
+      },
+    });
+  }
+
+  for (const user of userToDelete) {
+    await client.user.delete({
+      where: {
+        id: user.id,
+      },
+    });
+  }
+
+  res.send(userToDelete);
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
