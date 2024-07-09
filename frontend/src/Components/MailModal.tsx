@@ -4,10 +4,10 @@ import { List, User } from "./types";
 const serverPath = "http://localhost:3000";
 
 //send email
-async function sendEmail(fromEmail: string, subject: string, message: string, usersToBlast: User[]) {
+async function sendEmail(fromEmail: string, subject: string, message: string, usersToBlast: User[], listToBlast: List) {
     const response = await fetch(`${serverPath}/sendEmail`, {
         method: "POST",
-        body: JSON.stringify({ fromEmail, subject, message, usersToBlast }),
+        body: JSON.stringify({ fromEmail, subject, message, usersToBlast, listToBlast }),
         headers: {
             "Content-Type": "application/json",
         },
@@ -33,11 +33,13 @@ function MailModal() {
     const [mailList, setMailList] = useState<List[]>([]);
     const [usersToBlast, setUsersToBlast] = useState<User[]>([]);
     const [toEmail, setToEmail] = useState("");
+    const [listToBlast, setListToBlast] = useState<List>();
 
     useEffect(() => {
         getLists().then((data) => {
             setUsersToBlast(data[0].users);
             setMailList(data);
+            setListToBlast(data[0]);
 
         });
 
@@ -61,9 +63,8 @@ function MailModal() {
                             const list = mailList[Number(e.target.value)];
                             if (list) {
                                 setUsersToBlast(list.users);
-                                console.log("ran")
+                                setListToBlast(list);
                             }
-                            console.log(list.users)
                         }}>
                             {mailList.map((list: List, index: number) => (
                                 <option key={index} value={index}>{list.name}</option>
@@ -85,8 +86,10 @@ function MailModal() {
                         const mailModal = document.getElementById("mailModal") as HTMLDialogElement | null;
 
 
-
-                        sendEmail(fromEmail, subject, message, usersToBlast);
+                        if (listToBlast) {
+                            console.log(listToBlast)
+                            sendEmail(fromEmail, subject, message, usersToBlast, listToBlast);
+                        }
                         setFromEmail("");
                         setToEmail("");
                         setSubject("");

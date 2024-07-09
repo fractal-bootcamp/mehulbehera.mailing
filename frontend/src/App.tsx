@@ -1,4 +1,5 @@
 
+import Dashboard from "./Components/Dashboard";
 import NavBar from "./Components/NavBar";
 
 export default function App() {
@@ -7,7 +8,7 @@ export default function App() {
       <div>
         <NavBar />
       </div>
-
+      <Dashboard />
     </>
   )
 }

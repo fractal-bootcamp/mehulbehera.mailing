@@ -9,3 +9,10 @@ export type List = {
   name: string;
   users: User[];
 };
+
+export type EmailBlast = {
+  list: List;
+  from: string;
+  subject: string;
+  message: string;
+};

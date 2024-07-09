@@ -2,8 +2,12 @@ import express from "express";
 import cors from "cors";
 import client from "./client";
 import sgMail from "@sendgrid/mail";
+import sgClient from "@sendgrid/client";
 const app = express();
 const port = 3000;
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+sgClient.setApiKey(process.env.SENDGRID_API_KEY);
 
 app.use(cors());
 app.use(express.json());
@@ -12,11 +16,33 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.post("/sendEmail", (req, res) => {
-  console.log(process.env.SENDGRID_API_KEY);
+app.get("/getStats", (req, res) => {
+  console.log("ran");
+  const queryParams = {
+    start_date: "2024-07-09",
+  };
+
+  const request = {
+    url: `/v3/geo/stats`,
+    method: "GET",
+    qs: queryParams,
+  };
+
+  sgClient
+    .request(request)
+    .then(([response, body]) => {
+      console.log(response.statusCode);
+      console.log(response.body);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+});
+
+app.post("/sendEmail", async (req, res) => {
   console.log(req.body.usersToBlast);
 
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  const listToBlast = req.body.listToBlast;
 
   for (const user of req.body.usersToBlast) {
     const msg = {
@@ -36,7 +62,31 @@ app.post("/sendEmail", (req, res) => {
         console.error(error);
       });
   }
-  res.send(JSON.stringify({ message: "Email sent!" }));
+
+  const emailSent = await client.emailMessage.create({
+    data: {
+      listId: listToBlast.id,
+      //list: listToBlast,
+      from: req.body.fromEmail,
+      subject: req.body.subject,
+      message: req.body.message,
+    },
+  });
+
+  res.send(emailSent);
+});
+
+app.get("/getEmailBlasts", async (req, res) => {
+  const emailBlasts = await client.emailMessage.findMany({
+    include: {
+      list: {
+        include: {
+          users: true,
+        },
+      },
+    },
+  });
+  res.send(emailBlasts);
 });
 
 app.get("/getAllLists", async (req, res) => {
