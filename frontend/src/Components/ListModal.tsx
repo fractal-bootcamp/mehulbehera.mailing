@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import CreateListModal from "./CreateListModal";
-import EditUserModal from "./EditUsersModal";
 
 const serverPath = "http://localhost:3000";
 
@@ -26,7 +25,6 @@ async function deleteList(listId: string) {
 
 
 async function deleteUserFromList(listId: string, userId: string) {
-    console.log("delete user from list, ", listId, userId);
     const response = await fetch(`${serverPath}/deleteUserFromList`, {
         method: "POST",
         body: JSON.stringify({ listId, userId }),
@@ -38,26 +36,58 @@ async function deleteUserFromList(listId: string, userId: string) {
     return json;
 }
 
+async function addUserToList(listId: string, userId: string) {
+    const response = await fetch(`${serverPath}/addUserToList`, {
+        method: "POST",
+        body: JSON.stringify({ listId, userId }),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+    const json = await response.json();
+    return json;
+}
+
+async function getAllUsers() {
+    const response = await fetch(`${serverPath}/getAllUsers`);
+    const json = await response.json();
+    return json;
+}
+
+type User = {
+    id: string,
+    name: string,
+    email: string
+}
+
 function ListModal() {
 
     const [lists, setLists] = useState([]);
     const [editMode, setEditMode] = useState(false);
     const [poller, setPoller] = useState(0);
+    const [users, setUsers] = useState<User[]>([]);
 
     const refreshLists = () => {
         getLists().then((data) => {
             setLists(data);
-            console.log(data);
         });
     };
 
+    const refreshUsers = () => {
+        getAllUsers().then((data) => {
+
+            console.log(data);
+            setUsers(data);
+        });
+    };
 
     useEffect(() => {
         refreshLists();
+        refreshUsers();
     }, [poller]);
 
-    let editListId = "";
     const settings = editMode ? "btn btn-sm bg-gray-200 hover:bg-red-400" : "";
+    const addSettings = editMode ? "btn btn-sm bg-gray-200 hover:bg-green-400" : "";
     const editButtonSettings = editMode ? "btn btn-sm bg-green-400" : "btn btn-sm bg-blue-400";
 
     return (
@@ -84,7 +114,6 @@ function ListModal() {
                                 {list.users.map((user: { userId: string, userName: string, userEmail: string }) => (
                                     <div key={user.userId} className={`flex flex-row w-80 justify-between ${settings}`} onClick={() => {
                                         if (editMode) {
-                                            console.log("remove user from list, ", user.userName);
                                             deleteUserFromList(list.id, user.userId);
                                             setPoller(poller + 1);
                                         }
@@ -95,6 +124,32 @@ function ListModal() {
                                         {editMode ? <img src="trashcan.png" className="w-5 mt-1 h-5" /> : null}
                                     </div>
                                 ))}
+
+                                {editMode ? (
+                                    <div>
+                                        {users.map((user: User) => {
+                                            //console.log(user.name);
+                                            const listIDs = list.users.map((user: { userId: string, userName: string, userEmail: string }) => user.userId);
+                                            if (!listIDs.includes(user.id)) {
+                                                console.log(listIDs);
+                                                console.log(user.id);
+                                                return (
+                                                    <div key={user.id} className={`flex flex-row w-80 justify-between ${addSettings}`} onClick={() => {
+                                                        if (editMode) {
+                                                            addUserToList(list.id, user.id);
+                                                            setPoller(poller + 1);
+                                                        }
+                                                    }}>
+                                                        <p>{user.name}</p>
+                                                        <p>{user.email}</p>
+                                                        {editMode ? <img src="plus.png" className="w-5 mt-1 h-5" /> : null}
+                                                    </div>
+                                                )
+                                            }
+                                        })}
+                                    </div>
+                                ) : null}
+
                                 <button className="btn btn-sm bg-red-400 absolute right-2 bottom-2" onClick={() => {
                                     deleteList(list.id);
                                     setPoller(poller + 1);
@@ -117,7 +172,6 @@ function ListModal() {
             </dialog >
 
             <CreateListModal />
-            <EditUserModal listId={editListId} />
 
 
         </>
