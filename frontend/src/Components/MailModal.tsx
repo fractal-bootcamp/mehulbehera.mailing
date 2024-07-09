@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
+import { List, User } from "./types";
 
 const serverPath = "http://localhost:3000";
 
 //send email
-async function sendEmail(fromEmail: string, toEmail: string, subject: string, message: string) {
+async function sendEmail(fromEmail: string, subject: string, message: string, usersToBlast: User[]) {
     const response = await fetch(`${serverPath}/sendEmail`, {
         method: "POST",
-        body: JSON.stringify({ fromEmail, toEmail, subject, message }),
+        body: JSON.stringify({ fromEmail, subject, message, usersToBlast }),
         headers: {
             "Content-Type": "application/json",
         },
@@ -27,16 +28,20 @@ async function getLists() {
 function MailModal() {
 
     const [fromEmail, setFromEmail] = useState("");
-    const [toEmail, setToEmail] = useState("");
     const [subject, setSubject] = useState("");
     const [message, setMessage] = useState("");
-    const [mailList, setMailList] = useState([]);
-
+    const [mailList, setMailList] = useState<List[]>([]);
+    const [usersToBlast, setUsersToBlast] = useState<User[]>([]);
+    const [toEmail, setToEmail] = useState("");
 
     useEffect(() => {
         getLists().then((data) => {
+            setUsersToBlast(data[0].users);
             setMailList(data);
+
         });
+
+
     }, []);
 
     return (
@@ -51,9 +56,17 @@ function MailModal() {
 
                     <div className="flex flex-row mt-4">
                         <label className="mr-4 mt-1 w-20">To:</label>
-                        <select className="select select-bordered select-sm w-full" value={toEmail} onChange={(e) => setToEmail(e.target.value)}>
-                            {mailList.map((list: { id: string, name: string }) => (
-                                <option key={list.id} value={list.id}>{list.name}</option>
+                        <select className="select select-bordered select-sm w-full" value={toEmail} onChange={(e) => {
+                            setToEmail(e.target.value);
+                            const list = mailList[Number(e.target.value)];
+                            if (list) {
+                                setUsersToBlast(list.users);
+                                console.log("ran")
+                            }
+                            console.log(list.users)
+                        }}>
+                            {mailList.map((list: List, index: number) => (
+                                <option key={index} value={index}>{list.name}</option>
                             ))}
                         </select>
                     </div>
@@ -73,7 +86,7 @@ function MailModal() {
 
 
 
-                        sendEmail(fromEmail, toEmail, subject, message);
+                        sendEmail(fromEmail, subject, message, usersToBlast);
                         setFromEmail("");
                         setToEmail("");
                         setSubject("");

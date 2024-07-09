@@ -14,28 +14,29 @@ app.get("/", (req, res) => {
 
 app.post("/sendEmail", (req, res) => {
   console.log(process.env.SENDGRID_API_KEY);
+  console.log(req.body.usersToBlast);
 
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-  const msg = {
-    to: "mebehera@gmail.com", // Change to your recipient
-    from: "mebehera@gmail.com", // Change to your verified sender
-    subject: "Sending with SendGrid is Fun",
-    text: "and easy to do anywhere, even with Node.js",
-    html: "<strong>and easy to do anywhere, even with Node.js</strong>",
-  };
+  for (const user of req.body.usersToBlast) {
+    const msg = {
+      to: user.userEmail, // Change to your recipient
+      from: req.body.fromEmail, // Change to your verified sender
+      subject: req.body.subject,
+      text: "Hi " + user.userName + ",\n\n" + req.body.message,
+    };
 
-  sgMail
-    .send(msg)
-    .then((response) => {
-      console.log(response[0].statusCode);
-      console.log(response[0].headers);
-    })
-    .catch((error) => {
-      console.error(error);
-    });
-  console.log(req.body);
-  res.send("Email sent!");
+    sgMail
+      .send(msg)
+      .then((response) => {
+        console.log(response[0].statusCode);
+        console.log(response[0].headers);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+  res.send(JSON.stringify({ message: "Email sent!" }));
 });
 
 app.get("/getAllLists", async (req, res) => {
