@@ -119,6 +119,16 @@ app.post("/deleteUserFromList", async (req, res) => {
   res.send(user);
 });
 
+app.post("/addUserToList", async (req, res) => {
+  const user = await client.userInList.create({
+    data: {
+      userId: req.body.userId,
+      listId: req.body.listId,
+    },
+  });
+  res.send(user);
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
